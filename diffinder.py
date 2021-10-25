@@ -10,6 +10,27 @@ import hashlib
 from itertools import zip_longest
 from datetime import datetime
 
+def print_logo():
+    print("=" * 30)
+    print("{:^30}".format("D i f f i n d e r"))
+    print("=" * 30)
+    print()
+
+    print("Welcome to Diffinder!")
+    print("Info:")
+    print("Diffinder let's you compare \nfiles and find the lines that \ndiffer between the two.\n")
+    print("=" * 30)
+    print("\n")
+
+def print_instructions():
+    print("INSTRUCTIONS")
+    print("1. Execute diffinder")
+    print("2. Insert the full path of the first file")
+    print("3. Insert the full path of the file against which you want to compare the first one")
+    print("4. Diffinder runs and identifies all the lines that differ from one file to the other")
+    print("5. Check the resulting file generated for details")
+    print()
+
 def calculate_hash(file_name):
     """
     This function takes a file name (path) and reads it in byte mode, returning
@@ -62,6 +83,27 @@ def compare_files(file1, file2):
 
 
 def main():
+    #Diffinder welcome
+    print_logo()
+
+    #Users choice
+    print("Select an option:")
+    print("{:5}".format("i"), "Instructions", sep="")
+    print("{:5}".format("c"), "Start compare", sep="")
+    print("{:5}".format("q"), "Quit", sep="")
+    option  = input("Option: ")
+
+    if option == "i":
+        print_instructions()
+    elif option == "c":
+        print("Starting compare")
+    elif option == "q":
+        print("Quitting...")
+        sys.exit()
+    else:
+        print("Wrong choice...I quit!")
+        sys.exit()
+
     #Input files to compare
     file1 = input("Enter full path of the first file: ")
     file2 = input("Enter full path of the second file: ")
