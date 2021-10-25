@@ -14,3 +14,7 @@ the two files.
 If the digests correspond, than the two files are identical.
 Otherwise, diffinder reads the files line by line, writing in the resulting file information
 about the different lines so you can easily refer them to the original files.
+
+Files containing details about the variations are saved with the following name structure:
+YYYY-MM-DD HH.mm.ss_variations.txt
+So you can modify a file and regenerate the result without loosing the change history.
