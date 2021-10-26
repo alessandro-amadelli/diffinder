@@ -22,6 +22,25 @@ def print_logo():
     print("=" * 30)
     print("\n")
 
+def initial_user_choice():
+    #Users choice
+    print("Select an option:")
+    print("{:5}".format("i"), "Instructions", sep="")
+    print("{:5}".format("c"), "Start compare", sep="")
+    print("{:5}".format("q"), "Quit", sep="")
+    option  = input("Option: ")
+
+    if option == "i":
+        print_instructions()
+    elif option == "c":
+        print("Starting compare")
+    elif option == "q":
+        print("Quitting...")
+        sys.exit()
+    else:
+        print("Wrong choice...I quit!")
+        sys.exit()
+
 def print_instructions():
     print("INSTRUCTIONS")
     print("1. Execute diffinder")
@@ -37,11 +56,18 @@ def calculate_hash(file_name):
     the calculated md5 hash.
     """
     hash_md5 = hashlib.md5()
-    with open(file_name, "rb") as f:
-        #The file is 'broken down' into consecutive chunks to avoid overload the memory
-        CHUNK_LENGTH = 4096
-        for chunk in iter(lambda: f.read(CHUNK_LENGTH), b""):
-            hash_md5.update(chunk)
+    try:
+        with open(file_name, "rb") as f:
+            #The file is 'broken down' into consecutive chunks to avoid overload the memory
+            CHUNK_LENGTH = 4096
+            for chunk in iter(lambda: f.read(CHUNK_LENGTH), b""):
+                hash_md5.update(chunk)
+    except FileNotFoundError:
+        print(f"File '{file_name}' not found. Please check the file name...")
+        sys.exit()
+    except:
+        print(f"Error opening file '{file_name}'")
+        sys.exit()
 
     return hash_md5.hexdigest()
 
@@ -62,6 +88,7 @@ def compare_files(file1, file2):
     line_count, diff_count = 0,0
 
     f_out = open(file_out, "w")
+    f_out.write("VARIATIONS FILE\nWords in unchanged between the two lines are represented by an underscore ( '_' )\n")
     f_out.write(f"Comparison started: {timestamp}\n")
 
     with open(file1, "r") as f1, open(file2, "r") as f2:
@@ -72,37 +99,36 @@ def compare_files(file1, file2):
 
             if (line1:=line1.strip()) != (line2:=line2.strip()):
                 diff_count += 1
+
+                #Finding different characters in line of second file
+                str2 = ""
+                split1, split2 = line1.split(), line2.split()
+                c_num = min(len(split1),len(split2))
+                for i in range(c_num):
+                    if split1[i] == split2[i]:
+                        str2 += "_" * len(split1[i])
+                    else:
+                        str2 += split2[i]
+                    str2 += " "
+
+                if len(line2) > len(line1):
+                    str2 += " ".join(split2[i+1:])
+
                 f_out.write("=" * 30 + "\n")
                 f_out.write(f"LINE #{line_count}\n")
                 f_out.write("=" * 30 + "\n")
                 f_out.write(f"{file1}: \n{line1}\n")
-                f_out.write(f"{file2}: \n{line2}\n\n")
+                f_out.write(f"{file2}: \n{str2}\n\n")
     f_out.close()
 
-    return diff_count
-
+    return [diff_count, file_out]
 
 def main():
     #Diffinder welcome
     print_logo()
 
-    #Users choice
-    print("Select an option:")
-    print("{:5}".format("i"), "Instructions", sep="")
-    print("{:5}".format("c"), "Start compare", sep="")
-    print("{:5}".format("q"), "Quit", sep="")
-    option  = input("Option: ")
-
-    if option == "i":
-        print_instructions()
-    elif option == "c":
-        print("Starting compare")
-    elif option == "q":
-        print("Quitting...")
-        sys.exit()
-    else:
-        print("Wrong choice...I quit!")
-        sys.exit()
+    #User options
+    initial_user_choice()
 
     #Input files to compare
     file1 = input("Enter full path of the first file: ")
@@ -111,7 +137,7 @@ def main():
     #Calculating file hashes for a first quick comparison between the two
     file1_hash = calculate_hash(file1)
     file2_hash = calculate_hash(file2)
-    print(file1_hash, file2_hash, sep="\n")
+    # print(file1_hash, file2_hash, sep="\n")
 
     #Two identical hashes means the two files are identical
     if file1_hash == file2_hash:
@@ -120,8 +146,8 @@ def main():
 
     print("!! Differences found. !!")
     diff_count = compare_files(file1, file2)
-    print(f"TOTAL DIFFERENCES FOUND: {diff_count}")
-    print("Details can be found in file: \"variations.txt\".")
+    print(f"TOTAL DIFFERENCES FOUND: {diff_count[0]}")
+    print(f"Details can be found in file: \"{diff_count[1]}\".")
 
 if __name__ == "__main__":
     main()

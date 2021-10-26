@@ -8,6 +8,13 @@
 4. Diffinder runs and identifies all the lines that differ from one file to the other
 5. Check the resulting file generated for details
 
+### How to read the variations file
+Only the different lines are reported in the resulting variations file.
+
+For each different line:
+* The line from the first file is fully transcribed
+* In the second line, only the different words (unchanged either in characters, order or position) are transcribed. The common words are represented by "_" (underscore)
+
 ### Notes
 The first operation diffinder performs is to generate and check the MD5 hash digest of
 the two files.
