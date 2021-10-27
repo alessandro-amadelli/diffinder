@@ -6,6 +6,7 @@ Author: Ama
 """
 
 import sys
+import os
 import hashlib
 from itertools import zip_longest
 from datetime import datetime
@@ -71,6 +72,31 @@ def calculate_hash(file_name):
 
     return hash_md5.hexdigest()
 
+def get_file_size(file_name):
+    """
+    The function uses the os package to get the size of a specified file.
+    Then the file size is converted in the most suitable unit.
+    The file size is returned alogn with the size unit.
+    """
+    size = os.path.getsize(file_name)
+
+    if size in range(0, 1024):
+        file_size = size
+        size_unit = "B"
+    elif size in range(1024, 1024 * 1000):
+        file_size = size / 1024
+        size_unit = "KB"
+    elif size in range (1024 * 1000, 1024 * 1000 * 1000):
+        file_size = size / 1024 / 1024
+        size_unit = "MB"
+    else:
+        file_size = size / 1024 /1024 /1024
+        size_unit = "GB"
+
+    file_size = "{:.2f}".format(file_size)
+
+    return file_size, size_unit
+
 def compare_files(file1, file2):
     """
     This function takes 2 file name (path) and reads the files line by line, comparing
@@ -88,8 +114,8 @@ def compare_files(file1, file2):
     line_count, diff_count = 0,0
 
     f_out = open(file_out, "w")
-    f_out.write("VARIATIONS FILE\nWords in unchanged between the two lines are represented by an underscore ( '_' )\n")
-    f_out.write(f"Comparison started: {timestamp}\n")
+    f_out.write("VARIATIONS FILE\nWords in unchanged between the two lines are represented by an underscore ( '_' )\n" \
+    f"Comparison started: {timestamp}\n")
 
     with open(file1, "r") as f1, open(file2, "r") as f2:
         for line1, line2 in zip_longest(f1,f2):
@@ -100,7 +126,7 @@ def compare_files(file1, file2):
             if (line1:=line1.strip()) != (line2:=line2.strip()):
                 diff_count += 1
 
-                #Finding different characters in line of second file
+                #Finding different words in line of second file
                 str2 = ""
                 split1, split2 = line1.split(), line2.split()
                 c_num = min(len(split1),len(split2))
@@ -114,11 +140,9 @@ def compare_files(file1, file2):
                 if len(line2) > len(line1):
                     str2 += " ".join(split2[i+1:])
 
-                f_out.write("=" * 30 + "\n")
-                f_out.write(f"LINE #{line_count}\n")
-                f_out.write("=" * 30 + "\n")
-                f_out.write(f"{file1}: \n{line1}\n")
-                f_out.write(f"{file2}: \n{str2}\n\n")
+                f_out.write("=" * 30 + "\n" + f"LINE #{line_count}\n" + "=" * 30 + "\n" \
+                f"{file1}: \n{line1}\n" \
+                f"{file2}: \n{str2}\n\n")
     f_out.close()
 
     return [diff_count, file_out]
@@ -130,14 +154,20 @@ def main():
     #User options
     initial_user_choice()
 
-    #Input files to compare
+    #Input files to compare + hash calculation for a first quick comparison
     file1 = input("Enter full path of the first file: ")
-    file2 = input("Enter full path of the second file: ")
-
-    #Calculating file hashes for a first quick comparison between the two
     file1_hash = calculate_hash(file1)
+    file2 = input("Enter full path of the second file: ")
     file2_hash = calculate_hash(file2)
     # print(file1_hash, file2_hash, sep="\n")
+
+    #get file sizes to informate the user
+    file1_size, size1_unit = get_file_size(file1)
+    file2_size, size2_unit = get_file_size(file2)
+    print("File sizes:")
+    print("{:50}".format(f"{file1}:") + "{:>20}".format(f"{file1_size} {size1_unit}"),
+          "{:50}".format(f"{file2}:") + "{:>20}".format(f"{file2_size} {size2_unit}"), sep="\n")
+    print()
 
     #Two identical hashes means the two files are identical
     if file1_hash == file2_hash:
